@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MelodyFlow</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+<nav class="navbar-melody">
+  <div class="nav-container">
+    <a class="navbar-brand-custom" href="#hero">
+      <img src="assets/logo.jpg" alt="MelodyFlow Logo">
+      <span>MelodyFlow</span>
+    </a>
+    <div class="nav-links-desktop">
+      <a href="#hero">Home</a>
+      <a href="#" @click.prevent="openAbout">About</a>
+      <a href="#recommended">Recommended</a>
+      <a href="#library">My Library</a>
+      <a href="#mv-section">MV Selection</a>
+    </div>
+    <div class="nav-extra">
+      <div class="search-container">
+        <button class="search-icon-btn" @click="searchExpanded = !searchExpanded">
+          <i class="bi bi-search"></i>
+        </button>
+        <div class="search-expand-wrapper" v-show="searchExpanded":class="{ expanded: searchExpanded }">
+          <input type="text" class="search-bar" v-model="searchQuery" @input="doSearch" placeholder="Search song..." autocomplete="off">
+          <div class="search-dropdown" v-show="searchResult.length > 0 || searchNoResult" :class="{ show: searchResult.length > 0 || searchNoResult }">
+            <div class="search-dropdown-item" v-for="item in searchResult" :key="item.index" @click="selectSearchItem(item)">
+              <img :src="item.cover" class="search-result-img">
+              <div class="search-result-info">
+                <div class="search-result-title">{{ item.title }}</div>
+                <div class="search-result-artist">{{ item.artist }}</div>
+              </div>
+            </div>
+            <div v-if="searchNoResult && searchQuery" class="search-dropdown-item no-result">No results found</div>
+          </div>
+        </div>
+      </div>
+      <div class="desktop-auth-section">
+        <div v-if="!currentUser" class="desktop-auth-buttons">
+          <button class="nav-btn" @click="openLogin">Login</button>
+          <button class="nav-btn" @click="openRegister">Register</button>
+        </div>
+        <div v-else class="user-info-desktop">
+          <span class="user-greeting"><i class="bi bi-person-circle"></i> {{ currentUser.fullName }}</span>
+          <button class="nav-btn logout-btn" @click="logout">Logout</button>
+        </div>
+      </div>
+      <button class="nav-btn hamburger-btn" @click="toggleMobileMenu">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-nav-menu" :class="{ 'show-mobile-menu': mobileMenuOpen }">
+  <a href="#hero" @click="closeMobileMenu">Home</a>
+  <a href="#" @click.prevent="openAboutMobile">About</a>
+  <a href="#recommended" @click="closeMobileMenu">Recommended</a>
+  <a href="#library" @click="closeMobileMenu">My Library</a>
+  <a href="#mv-section" @click="closeMobileMenu">MV Selection</a>
+  <div class="mobile-auth-section">
+    <div v-if="!currentUser" class="mobile-auth-buttons">
+      <button class="mobile-auth-btn" @click="openLoginMobile">Login</button>
+      <button class="mobile-auth-btn" @click="openRegisterMobile">Register</button>
+    </div>
+    <div v-else class="mobile-user-info">
+      <span class="mobile-username"><i class="bi bi-person-circle"></i> {{ currentUser.fullName }}</span>
+      <button class="mobile-logout-btn" @click="logoutMobile">Logout</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <section class="hero" id="hero" @mouseenter="stopCarousel" @mouseleave="startCarousel">
+    <div class="carousel-container" id="mainCarousel">
+      <div class="carousel-slide" v-show="slideIdx === currentSlide"  :class="{ active: slideIdx === currentSlide }" v-for="(slide, slideIdx) in carouselData" :key="slideIdx" :data-track-index="slide.track" @click="playTrackByCarousel(slide.track)">
+        <img :src="slide.img" class="slide-img">
+        <div class="hero-text" v-if="slideIdx === 0">
+          <h1>MelodyFlow</h1>
+          <p>Your personalized music experience</p>
+        </div>
+        <div class="slide-caption" v-else>
+          <h2>{{ slide.title }}</h2>
+          <p>{{ slide.artist }}</p>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-btn prev-btn">❮</button>
+    <button class="carousel-btn next-btn">❯</button>
+    <div class="carousel-dots"></div>
+  </section>
+
+  <section class="recommended" id="recommended">
+    <h2 class="section-title">Recommended</h2>
+    <div class="accordion-genre">
+      <div class="accordion-item"><div class="accordion-header"><span>Pop</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="16"><img src="assets/16.jpg" alt="Die For You"><h4>Die For You</h4><p>The Weeknd</p></div><div class="card" data-track-id="17"><img src="assets/17.jpg" alt="Call You Tonight"><h4>Call You Tonight</h4><p>Whitney Houston</p></div><div class="card" data-track-id="18"><img src="assets/18.jpg" alt="爱错"><h4>爱错</h4><p>Wang Leehom</p></div><div class="card" data-track-id="22"><img src="assets/22.jpg" alt="你不知道的事"><h4>你不知道的事</h4><p>Wang Leehom</p></div><div class="card" data-track-id="23"><img src="assets/23.jpg" alt="Payphone"><h4>Payphone</h4><p>Maroon 5</p></div><div class="card" data-track-id="24"><img src="assets/24.jpg" alt="Fallin Out"><h4>Fallin Out</h4><p>Keyshia Cole</p></div><div class="card" data-track-id="25"><img src="assets/25.jpg" alt="We Don't Talk Anymore"><h4>We Don't Talk Anymore</h4><p>Charlie Puth</p></div><div class="card" data-track-id="31"><img src="assets/31.jpg" alt="Lie"><h4>Lie</h4><p>Sasha Alex Sloan</p></div><div class="card" data-track-id="34"><img src="assets/34.jpg" alt="21"><h4>21</h4><p>Gracie Abrams</p></div><div class="card" data-track-id="37"><img src="assets/37.jpg" alt="寂寞寂寞不好"><h4>寂寞寂寞不好</h4><p>Gary Cao</p></div></div></div></div>
+      <div class="accordion-item"><div class="accordion-header"><span>J-Pop</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="14"><img src="assets/14.jpg" alt="星象仪"><h4>星象仪</h4><p>Otsuka Ai</p></div><div class="card" data-track-id="28"><img src="assets/28.jpg" alt="顔"><h4>顔</h4><p>Ave Mujica</p></div><div class="card" data-track-id="29"><img src="assets/29.jpg" alt="花曇り"><h4>花曇り</h4><p>Sato Chiaki</p></div><div class="card" data-track-id="30"><img src="assets/30.jpg" alt="忘れてください"><h4>忘れてください</h4><p>Yorushika</p></div><div class="card" data-track-id="32"><img src="assets/32.jpg" alt="S.S.S."><h4>S.S.S.</h4><p>Sato Chiaki</p></div><div class="card" data-track-id="33"><img src="assets/33.jpg" alt="One Last Kiss"><h4>One Last Kiss</h4><p>Utada Hikaru</p></div></div></div></div>
+      <div class="accordion-item"><div class="accordion-header"><span>Anime</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="5"><img src="assets/5.jpg" alt="Tempest-tost"><h4>Tempest-tost</h4><p>MYTH & ROID</p></div><div class="card" data-track-id="10"><img src="assets/10.jpg" alt="gogo幽灵船"><h4>gogo幽灵船</h4><p>Kenshi Yonezu</p></div><div class="card" data-track-id="19"><img src="assets/19.jpg" alt="君がいて水になる"><h4>君がいて水になる</h4><p>Zutomayo</p></div><div class="card" data-track-id="27"><img src="assets/27.jpg" alt="Don't say 'lazy'"><h4>Don't say 'lazy'</h4><p>Houkago Tea Time</p></div><div class="card" data-track-id="35"><img src="assets/35.jpg" alt="だから僕は音楽を辞めた"><h4>だから僕は音楽を辞めた</h4><p>Yorushika</p></div><div class="card" data-track-id="36"><img src="assets/36.jpg" alt="傷つき傷つけ痛くて辛い"><h4>傷つき傷つけ痛くて辛い</h4><p>Togenashi Togeari</p></div></div></div></div>
+      <div class="accordion-item"><div class="accordion-header"><span>Electronic</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="2"><img src="assets/2.jpg" alt="Lost In The Crowd"><h4>Lost In The Crowd</h4><p>Tom Frane</p></div><div class="card" data-track-id="3"><img src="assets/3.jpg" alt="Creepin' up on You"><h4>Creepin' up on You</h4><p>Darren Hayes</p></div><div class="card" data-track-id="4"><img src="assets/4.jpg" alt="Fire"><h4>Fire</h4><p>Gavin Degraw</p></div><div class="card" data-track-id="8"><img src="assets/8.jpg" alt="Anybody Can Find Love"><h4>Anybody Can Find Love</h4><p>hkmori, Alice Rozova</p></div><div class="card" data-track-id="15"><img src="assets/15.jpg" alt="dark dream"><h4>children of the machine</h4><p>CG5</p></div><div class="card" data-track-id="21"><img src="assets/21.jpg" alt="TICKING AWAY"><h4>TICKING AWAY</h4><p>Grabbitz/Valorant/bbno$</p></div></div></div></div>
+      <div class="accordion-item"><div class="accordion-header"><span>Rock</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="6"><img src="assets/6.jpg" alt="铁花飞"><h4>铁花飞</h4><p>Mili, MSR</p></div><div class="card" data-track-id="9"><img src="assets/9.jpg" alt="bow and arrow"><h4>bow and arrow</h4><p>Kenshi Yonezu</p></div><div class="card" data-track-id="12"><img src="assets/12.jpg" alt="第六感"><h4>第六感</h4><p>Reol</p></div><div class="card" data-track-id="26"><img src="assets/26.jpg" alt="Turn The Page"><h4>Turn The Page</h4><p>Sam Lin</p></div></div></div></div>
+      <div class="accordion-item"><div class="accordion-header"><span>Ballad</span><i class="arrow">▶</i></div><div class="accordion-panel"><div class="grid-layout"><div class="card" data-track-id="1"><img src="assets/1.jpg" alt="死别"><h4>死别</h4><p>Shanon</p></div><div class="card" data-track-id="7"><img src="assets/7.jpg" alt="gone angel"><h4>gone angel</h4><p>Mili</p></div><div class="card" data-track-id="11"><img src="assets/11.jpg" alt="请不要带我走"><h4>请不要带我走</h4><p>Aoli Anduo, Shian</p></div><div class="card" data-track-id="13"><img src="assets/13.jpg" alt="机械师与太虚鸟"><h4>机械师与太虚鸟</h4><p>Iasah, sasakure.UK</p></div><div class="card" data-track-id="20"><img src="assets/20.jpg" alt="No Title"><h4>No Title</h4><p>Reol</p></div></div></div></div>
+    </div>
+  </section>
+
+  <section class="library" id="library">
+    <h2 class="section-title">My Library (Favorite Songs)</h2>
+    <table class="music-table">
+      <thead><tr><th>Cover</th><th>Title</th><th>Artist</th></tr></thead>
+      <tbody id="libraryTable"></tbody>
+    </table>
+  </section>
+
+  <section class="mv-section" id="mv-section">
+    <h2 class="section-title">MV Selection</h2>
+    <div class="mv-grid" id="mvGrid"></div>
+  </section>
+
+  <div class="mv-modal" id="mvModal">
+    <div class="mv-modal-content">
+      <div class="mv-video-container"><video id="mvPlayer" controls></video></div>
+      <div class="mv-modal-info"><div><h3 id="mvTitle">MV title</h3><p id="mvArtist">unknown artist</p></div><button class="close-modal" id="closeModalBtn">✕</button></div>
+    </div>
+  </div>
+
+  <div class="about-modal" id="aboutModal">
+    <div class="about-modal-content"><h2>🎵 About MelodyFlow</h2><p>Play any song you like, favorite it, and it will appear in your personal library.<br>✨ After a song ends, a random track will play automatically!</p><button class="about-close-btn" id="aboutCloseBtn">Got it</button></div>
+  </div>
+
+  <div class="auth-modal" id="loginModal"><div class="auth-modal-content"><div class="auth-header"><h2>Welcome Back</h2><button class="auth-close" id="closeLoginBtn">&times;</button></div><form id="loginForm" onsubmit="return false;"><input type="email" id="loginEmail" placeholder="Email" required><input type="password" id="loginPassword" placeholder="Password" required><p id="loginError" class="auth-error"></p><button type="submit" id="loginSubmitBtn">Login</button><p class="auth-switch">Don't have an account? <a href="#" id="switchToRegister">Register</a></p></form></div></div>
+  
+  <div class="auth-modal" id="registerModal">
+    <div class="auth-modal-content">
+      <div class="auth-header"><h2>Join MelodyFlow</h2><button class="auth-close" id="closeRegisterBtn">&times;</button></div>
+      <form id="registerForm" onsubmit="return false;">
+        <input type="text" id="regFullName" placeholder="Full Name" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regPassword" placeholder="Password (min 6 characters)" required>
+        <p>Choose your favourite types of music :</p>
+        <div class="checkbox-group" id="genreCheckboxGroup">
+          <label><input type="checkbox" name="favGenre" value="Pop"> Pop</label>
+          <label><input type="checkbox" name="favGenre" value="Rock"> Rock</label>
+          <label><input type="checkbox" name="favGenre" value="Jazz"> Jazz</label>
+          <label><input type="checkbox" name="favGenre" value="Electronic"> Electronic</label>
+          <label><input type="checkbox" name="favGenre" value="Classical"> Classical</label>
+          <label><input type="checkbox" name="favGenre" value="J-Pop"> J-Pop</label>
+          <label><input type="checkbox" name="favGenre" value="Anime"> Anime</label>
+          <label><input type="checkbox" name="favGenre" value="Ballad"> Ballad</label>
+        </div>
+        <p id="registerError" class="auth-error"></p>
+        <button type="submit" id="registerSubmitBtn">Register</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="switchToLogin">Login</a></p>
+      </form>
+    </div>
+  </div>
+</main>
+
+<div class="player-bar">
+  <div class="player-inner">
+    <img id="playerCover" src="assets/1.jpg" alt="cover">
+    <audio id="mainPlayer" controls></audio>
+    <button id="favoriteBtn">⭐</button>
+  </div>
+</div>
+<footer><p>© 2026 MelodyFlow</p></footer>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+const { createApp, ref } = Vue;
+
+const app = createApp({
+  setup() {
+    const currentUser = ref(null);
+    const searchQuery = ref('');
+    const searchResult = ref([]);
+    const searchExpanded = ref(false);
+    const mobileMenuOpen = ref(false);
+    const currentSlide = ref(0);
+    const searchNoResult = ref(false);
+    const carouselData = ref([
+      { img: 'assets/hero.jpg', track: 0, title: '', artist: '' },
+      { img: 'assets/01.jpg', track: 7, title: 'gone angels', artist: 'Mili' },
+      { img: 'assets/02.jpg', track: 37, title: '寂寞寂寞不好', artist: 'Gary Cao' },
+      { img: 'assets/03.jpg', track: 15, title: 'Children of the machine', artist: 'CG5/Dagames' },
+      { img: 'assets/04.jpg', track: 28, title: '顔', artist: 'Ave Mujica' },
+      { img: 'assets/05.jpg', track: 6, title: '铁花飞', artist: 'Mili' }
+    ]);
+
+    const TOTAL_TRACKS = 37;
+    const trackNames = [
+      "死别", "Lost In The Crowd", "Creepin' up on You", "Fire", "Tempest-tost", "铁花飞", "gone angel",
+      "Anybody Can Find Love (except you.)", "bow and arrow", "gogo幽灵船", "请不要带我走", "第六感", "机械师与太虚鸟", "星象仪",
+      "Children of the machine", "Die For You", "Call You Tonight", "爱错", "君がいて水になる", "No Title", "TICKING AWAY", "你不知道的事", "Payphone",
+      "Fallin Out", "We Don't Talk Anymore", "Turn The Page", "Don't say 'lazy'", "顔", "花曇り", "忘れてください", "Lie", "S.S.S.",
+      "One Last Kiss", "21", "だから僕は音楽を辞めた", "傷つき傷つけ痛くて辛い", "寂寞寂寞不好"
+    ];
+    const trackArtists = [
+      "Shanon", "Tom Frane", "Darren Hayes", "Gavin Degraw", "MYTH & ROID", "Mili, MSR", "Mili",
+      "hkmori, Alice Rozova", "Kenshi Yonezu", "Kenshi Yonezu", "Aoli Anduo, Shian", "Reol", "Iasah, sasakure.UK", "Otsuka Ai",
+      "CG5", "The Weeknd", "Whitney Houston", "Wang Leehom", "Zutomayo", "Reol", "Grabbitz/Valorant/bbno$", "Wang Leehom", "Maroon 5",
+      "Keyshia Cole", "Charlie Puth", "Sam Lin", "Houkago Tea Time", "Ave Mujica", "Sato Chiaki", "Yorushika", "Sasha Alex Sloan", "Sato Chiaki",
+      "Utada Hikaru", "Gracie Abrams", "Yorushika", "Togenashi Togeari", "Gary Cao"
+    ];
+
+    let favorites = [];
+    let currentTrackId = 1;
+    let player = null;
+    let playerCover = null;
+    let favoriteBtn = null;
+    let libraryTable = null;
+    let carouselInterval = null;
+
+    const USERS_KEY = "melodyflow_users";
+    const CURRENT_USER_KEY = "melodyflow_current_user";
+
+    function getUsers() { const u = localStorage.getItem(USERS_KEY); return u ? JSON.parse(u) : []; }
+    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    function saveCurrentUser(user) { if (user) localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user)); else localStorage.removeItem(CURRENT_USER_KEY); }
+
+    function showToast(message) {
+      let toast = document.querySelector('.login-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'login-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+    }
+
+    function saveUserFavorites() {
+      if (!currentUser.value) return;
+      const users = getUsers();
+      const idx = users.findIndex(u => u.email === currentUser.value.email);
+      if (idx !== -1) {
+        users[idx].favorites = favorites;
+        saveUsers(users);
+        currentUser.value.favorites = favorites;
+        saveCurrentUser(currentUser.value);
+      }
+    }
+
+    function updateFavoriteBtn() {
+      if (favoriteBtn) {
+        favoriteBtn.style.color = favorites.includes(currentTrackId) ? "#ffd700" : "#ffffff";
+      }
+    }
+
+    function renderLibrary() {
+      if (!libraryTable) return;
+      libraryTable.innerHTML = "";
+      if (!currentUser.value || favorites.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="3" style="text-align:center; color:#aaa;">${!currentUser.value ? "🔐 Please login to see your favorites" : "💔 No favorite songs yet. Click ⭐ to add!"}</td>`;
+        libraryTable.appendChild(tr);
+        return;
+      }
+      favorites.forEach(i => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><img src="assets/${i}.jpg" class="thumb"></td><td>${trackNames[i - 1] || `Track ${i}`}</td><td>${trackArtists[i - 1] || "Unknown Artist"}</td>`;
+        tr.onclick = () => playTrack(i);
+        libraryTable.appendChild(tr);
+      });
+    }
+
+    function playTrack(index) {
+      if (index < 1 || index > TOTAL_TRACKS) return;
+      currentTrackId = index;
+      if (playerCover) playerCover.src = `assets/${index}.jpg`;
+      if (player) {
+        player.src = `assets/${index}.mp3`;
+        player.load();
+        player.play().catch(e => console.log("autoplay blocked", e));
+      }
+      updateFavoriteBtn();
+      document.title = `${trackNames[index-1]} - MelodyFlow`;
+    }
+
+    function playRandomNext() {
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * TOTAL_TRACKS) + 1;
+      } while (newIndex === currentTrackId && TOTAL_TRACKS > 1);
+      playTrack(newIndex);
+    }
+
+    function registerUser(fullName, email, password, favGenres) {
+      const users = getUsers();
+      if (users.some(u => u.email === email)) return { success: false, error: "Email already registered!" };
+      if (password.length < 6) return { success: false, error: "Password must be at least 6 characters!" };
+      users.push({ fullName, email, password, favGenres: favGenres || [], favorites: [], createdAt: new Date().toISOString() });
+      saveUsers(users);
+      return { success: true };
+    }
+
+    function loginUser(email, password) {
+      const users = getUsers();
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) return { success: false, error: "Invalid email or password!" };
+      currentUser.value = { fullName: user.fullName, email: user.email, favGenres: user.favGenres || [], favorites: user.favorites || [] };
+      favorites = currentUser.value.favorites;
+      saveCurrentUser(currentUser.value);
+      renderLibrary();
+      updateFavoriteBtn();
+      showToast(`✅ Login successful! Welcome ${currentUser.value.fullName}`);
+      return { success: true };
+    }
+
+    function logoutUser() {
+      const name = currentUser.value?.fullName;
+      currentUser.value = null;
+      favorites = [];
+      saveCurrentUser(null);
+      renderLibrary();
+      updateFavoriteBtn();
+      showToast(`👋 Logged out${name ? ', ' + name : ''}. See you soon!`);
+    }
+
+    window.searchSongs = function(query) {
+      if (!query.trim()) return [];
+      const lower = query.toLowerCase();
+      const results = [];
+      for (let i = 0; i < trackNames.length; i++) {
+        if (trackNames[i].toLowerCase().includes(lower) || trackArtists[i].toLowerCase().includes(lower)) {
+          results.push({ index: i + 1, title: trackNames[i], artist: trackArtists[i], cover: `assets/${i + 1}.jpg` });
+        }
+      }
+      return results;
+    };
+
+    function doSearch() {
+      if (!searchQuery.value.trim()) {
+        searchResult.value = [];
+        searchNoResult.value = false;
+        return;
+      }
+      const results = window.searchSongs(searchQuery.value);
+      searchResult.value = results;
+      searchNoResult.value = results.length === 0;
+    }
+
+    function selectSearchItem(item) {
+      playTrack(item.index);
+      searchExpanded.value = false;
+      searchQuery.value = '';
+      searchResult.value = [];
+    }
+
+    function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+    function openRegister() { document.getElementById('registerModal').style.display = 'flex'; }
+    function openLoginMobile() { mobileMenuOpen.value = false; setTimeout(() => { document.getElementById('loginModal').style.display = 'flex'; }, 50); }
+    function openRegisterMobile() { mobileMenuOpen.value = false; setTimeout(() => { document.getElementById('registerModal').style.display = 'flex'; }, 50); }
+    function openAbout() { document.getElementById('aboutModal').classList.add('active'); }
+    function openAboutMobile() { mobileMenuOpen.value = false; setTimeout(() => { document.getElementById('aboutModal').classList.add('active'); }, 50); }
+    function closeMobileMenu() { mobileMenuOpen.value = false; }
+    function toggleMobileMenu() { mobileMenuOpen.value = !mobileMenuOpen.value; }
+
+    function initCarousel() {
+      const slides = document.querySelectorAll('#mainCarousel .carousel-slide');
+      const dotsContainer = document.querySelector('.carousel-dots');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      let idx = 0;
+      if (!slides.length) return;
+      function buildDots() {
+        if (dotsContainer) {
+          dotsContainer.innerHTML = "";
+          slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (i === idx) dot.classList.add('active');
+            dot.addEventListener('click', () => { goToSlide(i); resetAuto(); });
+            dotsContainer.appendChild(dot);
+          });
+        }
+      }
+      function goToSlide(index) {
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        slides.forEach((s, i) => s.classList.toggle('active', i === index));
+        idx = index;
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        currentSlide.value = idx;
+      }
+      function next() { goToSlide(idx + 1); }
+      function prev() { goToSlide(idx - 1); }
+      function startAuto() { if (carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(next, 4500); }
+      function stopAuto() { if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; } }
+      function resetAuto() { stopAuto(); startAuto(); }
+      const container = document.getElementById('mainCarousel');
+      if (container) { container.addEventListener('mouseenter', stopAuto); container.addEventListener('mouseleave', startAuto); }
+      if (prevBtn) prevBtn.addEventListener('click', () => { prev(); resetAuto(); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { next(); resetAuto(); });
+      buildDots(); startAuto();
+      window.stopCarouselAuto = stopAuto;
+      window.startCarouselAuto = startAuto;
+    }
+
+    const mvList = [
+      { title: "Don't say \"lazy\"", artist: "Houkago Tea Time", video: "assets/MV.mp4", poster: "assets/27.jpg" },
+      { title: "TICKING AWAY", artist: "Grabbitz/Valorant/bbno$", video: "assets/MV2.mp4", poster: "assets/21.jpg" },
+      { title: "DIE FOR YOU", artist: "The Weeknd", video: "assets/MV3.mp4", poster: "assets/16.jpg" },
+      { title: "We Don't Talk Anymore", artist: "Charlie Puth", video: "assets/MV4.mp4", poster: "assets/25.jpg" },
+      { title: "铁花飞", artist: "Mili, MSR", video: "assets/MV5.mp4", poster: "assets/6.jpg" },
+      { title: "Payphone", artist: "Maroon 5", video: "assets/MV6.mp4", poster: "assets/23.jpg" }
+    ];
+    function renderMVGrid() {
+      const mvGrid = document.getElementById("mvGrid");
+      if (!mvGrid) return;
+      mvGrid.innerHTML = "";
+      mvList.forEach((mv, idx) => {
+        const card = document.createElement("div");
+        card.className = "mv-card";
+        card.innerHTML = `<div class="mv-thumb"><img src="${mv.poster}"><div class="play-icon-badge"></div></div><div class="mv-info"><h4>${mv.title}</h4><p>${mv.artist}</p></div>`;
+        card.onclick = () => openMVPlayer(idx);
+        mvGrid.appendChild(card);
+      });
+    }
+    function openMVPlayer(idx) {
+      const mv = mvList[idx];
+      document.getElementById("mvTitle").innerText = mv.title;
+      document.getElementById("mvArtist").innerText = mv.artist;
+      const mvPlayer = document.getElementById("mvPlayer");
+      mvPlayer.src = mv.video;
+      mvPlayer.load();
+      document.getElementById("mvModal").classList.add("active");
+      mvPlayer.play().catch(e => console.log(e));
+    }
+
+    function loadCurrentUser() {
+      const saved = localStorage.getItem(CURRENT_USER_KEY);
+      if (saved) {
+        const user = JSON.parse(saved);
+        currentUser.value = user;
+        const users = getUsers();
+        const found = users.find(u => u.email === user.email);
+        favorites = (found && found.favorites) ? found.favorites : [];
+        renderLibrary();
+        updateFavoriteBtn();
+        showToast(`✨ Welcome back, ${user.fullName}!`);
+      }
+    }
+
+    function bindCardEvents() {
+      document.querySelectorAll('.card').forEach(card => {
+        const trackId = card.getAttribute('data-track-id');
+        if (trackId) {
+          card.removeEventListener('click', card._clickHandler);
+          const handler = () => playTrack(parseInt(trackId));
+          card._clickHandler = handler;
+          card.addEventListener('click', handler);
+        }
+      });
+    }
+
+    function initDomElements() {
+      player = document.getElementById("mainPlayer");
+      playerCover = document.getElementById("playerCover");
+      favoriteBtn = document.getElementById("favoriteBtn");
+      libraryTable = document.getElementById("libraryTable");
+      
+      if (player) {
+        player.removeEventListener('ended', playRandomNext);
+        player.addEventListener('ended', playRandomNext);
+      }
+      
+      if (favoriteBtn) {
+        favoriteBtn.onclick = () => {
+          if (!currentUser.value) {
+            alert("Please login to add favorites!");
+            openLogin();
+            return;
+          }
+          if (!favorites.includes(currentTrackId)) favorites.push(currentTrackId);
+          else favorites = favorites.filter(x => x !== currentTrackId);
+          updateFavoriteBtn();
+          saveUserFavorites();
+          renderLibrary();
+        };
+      }
+    }
+
+    function setupEventListeners() {
+      document.getElementById("loginSubmitBtn")?.addEventListener("click", () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const pwd = document.getElementById("loginPassword").value;
+        const res = loginUser(email, pwd);
+        if (res.success) document.getElementById("loginModal").style.display = "none";
+        else document.getElementById("loginError").textContent = res.error;
+      });
+      
+      document.getElementById("registerSubmitBtn")?.addEventListener("click", () => {
+        const fullName = document.getElementById("regFullName").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const pwd = document.getElementById("regPassword").value;
+        const selectedGenres = [];
+        document.querySelectorAll('#genreCheckboxGroup input:checked').forEach(cb => selectedGenres.push(cb.value));
+        if (!fullName || !email || !pwd) { document.getElementById("registerError").textContent = "Please fill all required fields!"; return; }
+        if (selectedGenres.length === 0) { document.getElementById("registerError").textContent = "Please select at least one favorite music genre!"; return; }
+        const res = registerUser(fullName, email, pwd, selectedGenres);
+        if (res.success) { 
+          document.getElementById("registerModal").style.display = "none"; 
+          openLogin(); 
+          alert("🎉 Registration successful! Please login."); 
+        } else {
+          document.getElementById("registerError").textContent = res.error;
+        }
+      });
+      
+      document.getElementById("closeLoginBtn")?.addEventListener("click", () => { document.getElementById("loginModal").style.display = "none"; });
+      document.getElementById("closeRegisterBtn")?.addEventListener("click", () => { document.getElementById("registerModal").style.display = "none"; });
+      document.getElementById("switchToRegister")?.addEventListener("click", (e) => { e.preventDefault(); document.getElementById("loginModal").style.display = "none"; document.getElementById("registerModal").style.display = "flex"; });
+      document.getElementById("switchToLogin")?.addEventListener("click", (e) => { e.preventDefault(); document.getElementById("registerModal").style.display = "none"; document.getElementById("loginModal").style.display = "flex"; });
+      document.getElementById("closeModalBtn")?.addEventListener("click", () => {
+        document.getElementById("mvModal").classList.remove("active");
+        const mvPlayer = document.getElementById("mvPlayer");
+        if (mvPlayer) { mvPlayer.pause(); mvPlayer.src = ""; }
+      });
+      document.getElementById("aboutCloseBtn")?.addEventListener("click", () => { document.getElementById("aboutModal").classList.remove("active"); });
+      
+      window.onclick = (e) => {
+        if (e.target === document.getElementById("loginModal")) document.getElementById("loginModal").style.display = "none";
+        if (e.target === document.getElementById("registerModal")) document.getElementById("registerModal").style.display = "none";
+        if (e.target === document.getElementById("aboutModal")) document.getElementById("aboutModal").classList.remove("active");
+        if (e.target === document.getElementById("mvModal")) document.getElementById("closeModalBtn")?.click();
+      };
+      
+      document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener("click", () => {
+          const item = header.parentElement;
+          item.classList.toggle('active');
+          header.classList.toggle('active');
+          document.querySelectorAll('.accordion-item').forEach(i => {
+            if (i !== item) {
+              i.classList.remove('active');
+              i.querySelector('.accordion-header')?.classList.remove('active');
+            }
+          });
+        });
+      });
+    }
+
+    setTimeout(() => {
+      initDomElements();
+      bindCardEvents();
+      renderMVGrid();
+      initCarousel();
+      setupEventListeners();
+      loadCurrentUser();
+      
+      if (player && !player.src) {
+        playTrack(1);
+      }
+    }, 100);
+
+    return {
+      currentUser,
+      searchQuery,
+      searchResult,
+      searchExpanded,
+      mobileMenuOpen,
+      currentSlide,
+      searchNoResult,
+      carouselData,
+      openLogin,
+      openRegister,
+      openLoginMobile,
+      openRegisterMobile,
+      openAbout,
+      openAboutMobile,
+      logout: logoutUser,
+      logoutMobile: () => { mobileMenuOpen.value = false; setTimeout(() => logoutUser(), 50); },
+      closeMobileMenu,
+      toggleMobileMenu,
+      doSearch,
+      selectSearchItem,
+      playTrackByCarousel: (trackId) => { if (trackId && trackId > 0) playTrack(trackId); },
+      stopCarousel: () => { if (window.stopCarouselAuto) window.stopCarouselAuto(); },
+      startCarousel: () => { if (window.startCarouselAuto) window.startCarouselAuto(); }
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
